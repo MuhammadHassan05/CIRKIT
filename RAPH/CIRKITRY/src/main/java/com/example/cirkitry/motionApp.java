@@ -38,7 +38,7 @@ import javafx.scene.shape.Box;
 
 
 
-public class Main extends Application {
+public class motionApp extends Application {
 
     @Override
     public void start(Stage stage) {
@@ -47,7 +47,7 @@ public class Main extends Application {
         // 1. Create world
         // ------------------------
         Group world = new Group();
-        MObj.addAxisBoxes(world);
+        WObj.addAxisBoxes(world);
 
         // ------------------------
         // 2. Create SubScene
@@ -74,7 +74,7 @@ public class Main extends Application {
         ds.setTranslateZ(0);
 
         // Motion controls the DirectionSphere
-        MotionF motion = new MotionF(ds);
+        Motion motion = new Motion(ds);
         // Motion motion = new Motion(cameraHolder); // --> MOVEABLE CAMERA 
 
         world.getChildren().add(motion.getRootNode());
@@ -105,8 +105,8 @@ public class Main extends Application {
             @Override
             public void handle(long now) {
                 String str = "";
-                str = MObj.PrintCoord(str, "Position", motion.getPosition());
-                str = MObj.PrintCoord(str, "DS Local", ds);
+                str = WObj.PrintCoord(str, "Position", motion.getPosition());
+                str = WObj.PrintCoord(str, "DS Local", ds);
                 cameraPosLabel.setText(str);
 
                 motion.update();
@@ -130,7 +130,7 @@ public class Main extends Application {
 // =======================
 // Helper Class: WObj
 // =======================
-class MObj {
+class WObj {
 
     public static String PrintCoord(String str, String label, Group g) {
         double x = g.getTranslateX();
@@ -199,69 +199,3 @@ class MObj {
         root.getChildren().addAll(boxPosX, boxNegX, boxPosY, boxNegY, boxPosZ, boxNegZ);
     }
 }
-
-
-
-
-// package com.example.cirkitry;
-
-// // import javafx.animation.AnimationTimer;
-
-// import javafx.application.Application;
-//  import javafx.scene.Group;
-// import javafx.scene.PerspectiveCamera;
-// import javafx.scene.Scene;
-// import javafx.scene.SceneAntialiasing;
-// import javafx.scene.SubScene;
-// import javafx.scene.image.Image;
-// import javafx.scene.paint.Color;
-// import javafx.scene.paint.PhongMaterial;
-// import javafx.scene.shape.Box;
-// import javafx.scene.transform.Rotate;
-// import javafx.stage.Stage;
-
-// public class Main extends Application {
-
-//     @Override
-//     public void start(Stage stage) {
-//         Group root = new Group();
-
-//         // ---- Create a huge flat box (sheet) ----
-//         double width = 1000;
-//         double height = 1000;
-//         double depth = 1; // very thin
-//         Box sheet = new Box(width, height, depth);
-
-//         // Rotate so it lies flat on XY plane
-//         sheet.getTransforms().add(new Rotate(90, Rotate.X_AXIS));
-
-//         // ---- Apply grid texture ----
-//         PhongMaterial material = new PhongMaterial();
-//         Image gridImage = new Image("file:resources/grid.jpg"); // replace with your JPEG path
-//         material.setDiffuseMap(gridImage);
-//         sheet.setMaterial(material);
-
-//         root.getChildren().add(sheet);
-
-//         // ---- Camera ----
-//         PerspectiveCamera camera = new PerspectiveCamera(true);
-//         camera.setTranslateZ(-500); // pull back to see the sheet
-//         camera.setNearClip(0.1);
-//         camera.setFarClip(2000);
-
-//         SubScene subScene = new SubScene(root, 800, 600, true, SceneAntialiasing.BALANCED);
-//         subScene.setFill(Color.BLACK);
-//         subScene.setCamera(camera);
-
-//         Group sceneRoot = new Group(subScene);
-//         Scene scene = new Scene(sceneRoot, 800, 600);
-
-//         stage.setScene(scene);
-//         stage.setTitle("Flat Grid Sheet");
-//         stage.show();
-//     }
-
-//     public static void main(String[] args) {
-//         launch();
-//     }
-// }
