@@ -9,12 +9,19 @@ import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
-import javafx.scene.shape.Box;
- import javafx.stage.Stage;
+ import javafx.scene.shape.Box;
+ import javafx.scene.shape.CullFace;
+ import javafx.scene.shape.MeshView;
+ import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Rotate;
+import javafx.stage.Stage;
+
+
 
 // import java.util.HashSet;
 
@@ -48,6 +55,7 @@ public class Main extends Application {
         // ------------------------
         Group world = new Group();
         MObj.addAxisBoxes(world);
+        world.getChildren().add(MObj.createRepeatingFloor(new Image(getClass().getResource("/tile.jpeg").toExternalForm()),0.5,100));
 
         // ------------------------
         // 2. Create SubScene
@@ -74,10 +82,10 @@ public class Main extends Application {
         ds.setTranslateZ(0);
 
         // Motion controls the DirectionSphere
-        MotionF motion = new MotionF(ds);
+        Motion motion = new Motion(cameraHolder);
         // Motion motion = new Motion(cameraHolder); // --> MOVEABLE CAMERA 
 
-        world.getChildren().add(motion.getRootNode());
+        // world.getChildren().add(motion.getRootNode());
 
         subScene.setCamera(camera);
 
@@ -198,6 +206,65 @@ class MObj {
 
         root.getChildren().addAll(boxPosX, boxNegX, boxPosY, boxNegY, boxPosZ, boxNegZ);
     }
+
+public static MeshView createRepeatingFloor(
+        Image img,
+        double texelScale,
+        double repeatScale        // how many times texture repeats in world space
+) {
+    float imgW = (float) img.getWidth();   // pixel width
+    float imgH = (float) img.getHeight();  // pixel height
+
+    // Natural world size of ONE texture tile
+    float tileW = (float) (imgW * texelScale);
+    float tileH = (float) (imgH * texelScale);
+
+    // Final world size
+    float worldW = tileW * (float) repeatScale;
+    float worldH = tileH * (float) repeatScale;
+
+    float halfW = worldW / 2f;
+    float halfH = worldH / 2f;
+
+    TriangleMesh mesh = new TriangleMesh();
+
+    // WORLD GEOMETRY
+    mesh.getPoints().addAll(
+            -halfW, 0, -halfH,
+             halfW, 0, -halfH,
+             halfW, 0,  halfH,
+            -halfW, 0,  halfH
+    );
+
+    // UV COORDS (TILING)
+    // if repeatScale = 2 → UV goes 0..2
+    mesh.getTexCoords().addAll(
+            0, 0,
+            (float) repeatScale, 0,
+            (float) repeatScale, (float) repeatScale,
+            0, (float) repeatScale
+    );
+
+    mesh.getFaces().addAll(
+            0,0, 1,1, 2,2,
+            0,0, 2,2, 3,3
+    );
+
+    PhongMaterial mat = new PhongMaterial();
+    mat.setDiffuseMap(img);
+
+    MeshView mv = new MeshView(mesh);
+    mv.setMaterial(mat);
+    mv.setCullFace(CullFace.NONE);
+    mv.getTransforms().add(new Rotate(90,Rotate.X_AXIS));
+    
+
+    return mv;
+}
+
+
+// getTransforms().add(new Rotate(90,Rotate.X_AXIS));
+
 }
 
 

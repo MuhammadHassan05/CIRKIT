@@ -111,7 +111,7 @@ private void move(Point3D dir, double amount) {
 
     private void handleKeyTranslate() {
 
-        double speed = 5;
+        double speed = 1.5;
         Point3D forward = getForward();
         Point3D right   = getRight();
         Point3D up      = getUp();

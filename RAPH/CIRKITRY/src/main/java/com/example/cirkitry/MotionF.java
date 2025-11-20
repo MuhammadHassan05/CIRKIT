@@ -141,22 +141,22 @@ private void move(Point3D dir, double amount) {
     double Rspeed = 1;
 
     if (activeKeys.contains(KeyCode.Q))
-        rotateNode(yawNode, getRight(), Rspeed);
+        rotateNode(yawNode, getRightFrom(yawNode), Rspeed);
 
     if (activeKeys.contains(KeyCode.E))
-        rotateNode(yawNode, getRight(), -Rspeed);
+        rotateNode(yawNode, getRightFrom(yawNode), -Rspeed);
 
     if (activeKeys.contains(KeyCode.R))
-        rotateNode(pitchNode, getUp(), -Rspeed);
+        rotateNode(pitchNode, getUpFrom(pitchNode), -Rspeed);
 
     if (activeKeys.contains(KeyCode.T))
-        rotateNode(pitchNode, getUp(), Rspeed);
+        rotateNode(pitchNode, getUpFrom(pitchNode), Rspeed);
 
     if (activeKeys.contains(KeyCode.Y))
-        rotateNode(rollNode, getForward(), -Rspeed);
+        rotateNode(rollNode, getForwardFrom(rollNode), -Rspeed);
 
     if (activeKeys.contains(KeyCode.U))
-        rotateNode(rollNode, getForward(), Rspeed);
+        rotateNode(rollNode, getForwardFrom(rollNode), Rspeed);
     }
 
    private Point3D getForward() {
@@ -177,10 +177,23 @@ private Point3D getRight() {
             .normalize();
 }
 
+/// MOTIONF EXCLUSIVES
+
 private void rotateNode(Group node, Point3D axis, double angle) {
     Affine affine = new Affine(node.getLocalToParentTransform());
     affine.appendRotation(angle, 0, 0, 0, axis);
     node.getTransforms().setAll(affine);
+}
+
+
+private Point3D getRightFrom(Group g) {
+    return g.getLocalToSceneTransform().deltaTransform(new Point3D(1,0,0)).normalize();
+}
+private Point3D getUpFrom(Group g) {
+    return g.getLocalToSceneTransform().deltaTransform(new Point3D(0,-1,0)).normalize();
+}
+private Point3D getForwardFrom(Group g) {
+    return g.getLocalToSceneTransform().deltaTransform(new Point3D(0,0,1)).normalize();
 }
 
 
