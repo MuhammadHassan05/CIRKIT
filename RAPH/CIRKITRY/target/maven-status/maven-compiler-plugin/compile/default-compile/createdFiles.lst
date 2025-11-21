@@ -17,6 +17,7 @@ com\example\cirkitry\motionApp.class
 com\example\rotatingcuboid\Main$1.class
 com\example\gridy\Main$1.class
 com\example\cirkitry\Quaternion.class
+com\example\cirkitry\SelectionManager.class
 com\example\manyobjects\Main.class
 com\example\cirkitry\Vector3f.class
 com\example\freefly\Vector3f.class

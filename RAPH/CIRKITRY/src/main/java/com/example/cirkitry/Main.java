@@ -14,11 +14,13 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
- import javafx.scene.shape.Box;
- import javafx.scene.shape.CullFace;
- import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Box;
+import javafx.scene.shape.CullFace;
+import javafx.scene.shape.Cylinder;
+import javafx.scene.shape.MeshView;
+import javafx.scene.shape.Sphere;
  import javafx.scene.shape.TriangleMesh;
-import javafx.scene.transform.Rotate;
+ import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 
 
@@ -55,8 +57,27 @@ public class Main extends Application {
         // ------------------------
         Group world = new Group();
         MObj.addAxisBoxes(world);
-        world.getChildren().add(MObj.createRepeatingFloor(new Image(getClass().getResource("/tile.jpeg").toExternalForm()),0.5,100));
 
+        MeshView tile = MObj.createRepeatingFloor(new Image(getClass().getResource("/tile.jpeg").toExternalForm()),0.5,100);
+
+        Group gate = MObj.createGate(-5,-5,2,3,1);
+        Group gate1 = MObj.createGate(-5,5,2,3,0);
+        Group gate2 = MObj.createGate(5,5,2,3,0);
+        Group gate3 = MObj.createGate(5,-5,2,3,0);
+        Group joint = MObj.createConnect(2,2,true,true,false,true,0);
+        Group wire = MObj.createWire(1, 1,6,3);
+        Group elbow = MObj.createElbowPipe(-1,-1,0);
+        Group light = MObj.createLight(3,-3,0);
+        world.getChildren().addAll(tile,gate,joint,wire,gate1,gate2,gate3,elbow,light);
+
+
+
+
+
+
+
+
+        
         // ------------------------
         // 2. Create SubScene
         // ------------------------
@@ -206,6 +227,432 @@ class MObj {
 
         root.getChildren().addAll(boxPosX, boxNegX, boxPosY, boxNegY, boxPosZ, boxNegZ);
     }
+public static Group createWire(int x,int y,int length,int direction)
+    {
+
+        if(x==0)
+        {
+            x=1;
+        }
+        if(y==0)
+        {
+            y=1;
+        }
+
+
+
+       Group wire = new Group();
+
+       Cylinder pipe = new Cylinder(15,50*length);
+
+
+       wire.getChildren().addAll(pipe);
+       int u =1;
+       int v=1;
+
+
+       if(direction==0||direction==2)
+       {
+         wire.getTransforms().add(new Rotate(0,Rotate.Z_AXIS));
+         u=1;
+         v=length;
+       }
+       else if(direction==1||direction==3)
+       {
+        wire.getTransforms().add(new Rotate(90,Rotate.Z_AXIS));
+        u=length;
+         v=1;
+       }
+       
+
+
+       if(x>0)
+       {
+           wire.setTranslateX(x*50-(50*u)/2);
+       }
+       else{
+           wire.setTranslateX(x*50+(50*u)/2);
+       }
+
+       if(y>0)
+       {
+            wire.setTranslateY(y*50-(50*v)/2);
+           
+       }
+       else{
+ wire.setTranslateY(y*50+(50*v)/2);
+       }
+       
+
+       // Y-axis - fixed to match createConnect logic
+
+       if(x>0)
+    {
+        wire.setTranslateX(wire.getTranslateX()+50*(u-1));
+    }
+     
+    if (y > 0) {
+        wire.setTranslateY(wire.getTranslateY()+50*(v-1));
+    } 
+    
+
+           if(direction==0)
+       {
+         wire.setTranslateY(wire.getTranslateY()-50*(v-1));
+        
+
+       }
+       else if(direction==3)
+       {
+        wire.setTranslateX(wire.getTranslateX()-50*(u-1));
+       }
+
+
+        return wire;
+    }
+
+
+public static Group createGate(int x, int y,int cHeight, int cWidth,int direction) {
+    if(x == 0) {
+        x = 1;
+    }
+    if(y == 0) {
+        y = 1;
+    }
+    Group gate = new Group();
+
+    Box body = new Box(50 * cWidth, 50 * cHeight, 50);
+    gate.getChildren().addAll(body);
+    gate.setTranslateZ(-50/2);
+
+
+    int u=1;
+    int v=1;
+    
+        if(direction==0||direction==2){
+         gate.getTransforms().add(new Rotate(0,Rotate.Z_AXIS));
+        u=cWidth;
+        v=cHeight;
+    }
+    else if(direction==1||direction==3){
+        gate.getTransforms().add(new Rotate(90,Rotate.Z_AXIS));
+         u=cHeight;
+        v=cWidth; 
+    }
+   
+
+    // X-axis - same logic as createConnect
+    if (x > 0) {
+        gate.setTranslateX(x * 50 - (50 * u) / 2);
+    } else {
+        gate.setTranslateX(x * 50 + (50 * u) / 2);
+    }
+
+    // Y-axis - fixed to match createConnect logic
+    if (y > 0) {
+        gate.setTranslateY(y * 50 - (50 * v) / 2);
+    } else {
+        gate.setTranslateY(y * 50 + (50 * v) / 2);
+    }
+
+
+    // X-axis - same logic as createConnect
+    if (x > 0) {
+        gate.setTranslateX(gate.getTranslateX()+50*(u-1));
+        
+    } 
+
+    // Y-axis - fixed to match createConnect logic
+    if (y > 0) {
+        gate.setTranslateY(gate.getTranslateY()+50*(v-1));
+    } 
+
+
+        if(direction==0)
+       {
+         gate.setTranslateY(gate.getTranslateY()-50*(v-1));
+        
+
+       }
+       else if(direction==3)
+       {
+        gate.setTranslateX(gate.getTranslateX()-50*(u-1));
+       }
+
+    
+
+    return gate;
+}
+
+    public static Group createConnect(int x,int y,Boolean one,Boolean two,Boolean three,Boolean four,int orientation)
+    {
+
+        if(x==0)
+        {
+            x=1;
+        }
+        if(y==0)
+        {
+            y=1;
+        }
+        Group conn = new Group();
+
+         Sphere body = new Sphere(16);
+
+         body.getTransforms().add(new Rotate(90,Rotate.X_AXIS));
+         
+
+
+
+        
+
+
+         conn.getChildren().addAll(body);
+         if(one)
+         {
+ Cylinder pipe = new Cylinder(15,20);
+         pipe.getTransforms().add(new Rotate(0,Rotate.Z_AXIS));
+         pipe.setTranslateY(-15);
+         conn.getChildren().addAll(pipe);
+         }
+         if(two)
+         {
+ Cylinder pipe = new Cylinder(15,20);
+         pipe.getTransforms().add(new Rotate(90,Rotate.Z_AXIS));
+         pipe.setTranslateX(15);
+         conn.getChildren().addAll(pipe);
+         }
+         if(three)
+         {
+             Cylinder pipe = new Cylinder(15,20);
+         pipe.getTransforms().add(new Rotate(0,Rotate.Z_AXIS));
+         pipe.setTranslateY(15);
+         conn.getChildren().addAll(pipe);
+
+         }
+         if(four)
+         {
+            Cylinder pipe = new Cylinder(15,20);
+         pipe.getTransforms().add(new Rotate(90,Rotate.Z_AXIS));
+         pipe.setTranslateX(-15);
+         conn.getChildren().addAll(pipe);
+
+         }
+         
+         
+         if (orientation==0) {
+         conn.getTransforms().add(new Rotate(0,Rotate.Z_AXIS));
+
+    }
+    else if (orientation==1) {
+        conn.getTransforms().add(new Rotate(90,Rotate.Z_AXIS));
+
+    }
+    else if (orientation==2) {
+        conn.getTransforms().add(new Rotate(180,Rotate.Z_AXIS));
+
+    }
+    else
+    {
+        conn.getTransforms().add(new Rotate(270,Rotate.Z_AXIS));
+  
+    }
+
+         
+       if(x>0)
+       {
+ conn.setTranslateX(x*50-(50)/2);
+       }
+       else
+        {
+conn.setTranslateX(x*50+(50)/2);
+       }
+
+       if(y>0)
+       {
+conn.setTranslateY(y*50-(50)/2);
+       }
+       else
+        {
+         conn.setTranslateY(y*50+(50)/2);
+       }
+
+
+      
+      
+
+
+
+         
+
+
+        return conn;
+    }
+
+    
+
+public static Group createElbowPipe(int x,int y,int orientation) {
+    
+     if(x==0)
+        {
+            x=1;
+        }
+        if(y==0)
+        {
+            y=1;
+        }
+    
+    Group elbow = new Group();
+
+    
+    // Horizontal cylinder
+    Cylinder horizontal = new Cylinder(15,25);
+    horizontal.setTranslateY(25/2);
+    
+    
+    // Vertical cylinder  
+    Cylinder vertical = new Cylinder(15,25);
+    
+    
+    vertical.getTransforms().add(new Rotate(90, Rotate.Z_AXIS));
+    vertical.setTranslateX(25/2);
+
+
+    
+    // Curved joint (sphere section)
+    Sphere joint = new Sphere(15);
+    
+    
+    elbow.getChildren().addAll(horizontal, vertical, joint);
+
+      if (orientation==0) {
+         elbow.getTransforms().add(new Rotate(0,Rotate.Z_AXIS));
+
+    }
+    else if (orientation==1) {
+        elbow.getTransforms().add(new Rotate(90,Rotate.Z_AXIS));
+
+    }
+    else if (orientation==2) {
+        elbow.getTransforms().add(new Rotate(180,Rotate.Z_AXIS));
+
+    }
+    else
+    {
+        elbow.getTransforms().add(new Rotate(270,Rotate.Z_AXIS));
+  
+    }
+
+         
+       if(x>0)
+       {
+ elbow.setTranslateX(x*50-(50)/2);
+       }
+       else
+        {
+elbow.setTranslateX(x*50+(50)/2);
+       }
+
+       if(y>0)
+       {
+elbow.setTranslateY(y*50-(50)/2);
+       }
+       else
+        {
+         elbow.setTranslateY(y*50+(50)/2);
+       }
+
+    
+    return elbow;
+}
+
+public static Group createLight(int x,int y,int orientation)
+{
+
+         if(x==0)
+        {
+            x=1;
+        }
+        if(y==0)
+        {
+            y=1;
+        }
+
+
+    Group bulb = new Group();
+
+    Cylinder base = new Cylinder(70,40);
+    base.getTransforms().add(new Rotate(90,Rotate.X_AXIS));
+
+
+    Cylinder bell = new Cylinder(54,160);
+    
+    bell.getTransforms().add(new Rotate(90,Rotate.X_AXIS));
+
+
+    Sphere dome = new Sphere(54);
+dome.setTranslateZ(-80);
+
+    Cylinder conn = new Cylinder(15,50);
+    conn.setTranslateY(-50);
+    
+
+    bulb.getChildren().addAll(base,bell,dome,conn);
+
+    
+      if (orientation==0) {
+         bulb.getTransforms().add(new Rotate(0,Rotate.Z_AXIS));
+
+    }
+    else if (orientation==1) {
+        bulb.getTransforms().add(new Rotate(90,Rotate.Z_AXIS));
+
+    }
+    else if (orientation==2) {
+        bulb.getTransforms().add(new Rotate(180,Rotate.Z_AXIS));
+
+    }
+    else
+    {
+        bulb.getTransforms().add(new Rotate(270,Rotate.Z_AXIS));
+  
+    }
+
+         
+       if(x>0)
+       {
+ bulb.setTranslateX(x*50-(50*3)/2);
+       }
+       else
+        {
+bulb.setTranslateX(x*50+(50*3)/2);
+       }
+
+       if(y>0)
+       {
+bulb.setTranslateY(y*50-(50*3)/2);
+       }
+       else
+        {
+         bulb.setTranslateY(y*50+(50*3)/2);
+       }
+
+           // X-axis - same logic as createConnect
+    if (x > 0) {
+        bulb.setTranslateX(bulb.getTranslateX()+50*(2));
+        
+    } 
+
+    // Y-axis - fixed to match createConnect logic
+    if (y > 0) {
+        bulb.setTranslateY(bulb.getTranslateY()+50*(2));
+    } 
+
+    SelectionManager.makeSelectable(bulb);
+
+    return bulb;
+
+}
 
 public static MeshView createRepeatingFloor(
         Image img,
@@ -266,9 +713,6 @@ public static MeshView createRepeatingFloor(
 // getTransforms().add(new Rotate(90,Rotate.X_AXIS));
 
 }
-
-
-
 
 // package com.example.cirkitry;
 
