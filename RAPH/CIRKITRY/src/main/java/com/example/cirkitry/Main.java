@@ -8,10 +8,8 @@ import javafx.scene.PerspectiveCamera;
 import javafx.scene.Scene;
 import javafx.scene.SceneAntialiasing;
 import javafx.scene.SubScene;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Box;
@@ -19,9 +17,9 @@ import javafx.scene.shape.CullFace;
 import javafx.scene.shape.Cylinder;
 import javafx.scene.shape.MeshView;
 import javafx.scene.shape.Sphere;
- import javafx.scene.shape.TriangleMesh;
- import javafx.scene.transform.Rotate;
-import javafx.stage.Stage;
+import javafx.scene.shape.TriangleMesh;
+import javafx.scene.transform.Rotate;
+ import javafx.stage.Stage;
 
 
 
@@ -113,13 +111,10 @@ public class Main extends Application {
         // ------------------------
         // 5. GUI overlay
         // ------------------------
-        Label cameraPosLabel = new Label();
-        cameraPosLabel.setTextFill(Color.WHITE);
-        VBox guiOverlay = new VBox(cameraPosLabel);
-        guiOverlay.setPickOnBounds(false);
+        GUIOverlay gui = new GUIOverlay();
 
         StackPane root = new StackPane();
-        root.getChildren().addAll(subScene, guiOverlay);
+        root.getChildren().addAll(subScene, gui.getRoot());
 
         Scene scene = new Scene(root, 800, 600);
 
@@ -136,7 +131,7 @@ public class Main extends Application {
                 String str = "";
                 str = MObj.PrintCoord(str, "Position", motion.getPosition());
                 str = MObj.PrintCoord(str, "DS Local", ds);
-                cameraPosLabel.setText(str);
+                gui.getCameraPosLabel().setText(str);
 
                 motion.update();
             }
