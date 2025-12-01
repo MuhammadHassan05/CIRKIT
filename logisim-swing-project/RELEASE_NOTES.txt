@@ -1,0 +1,17 @@
+Logisim Swing Project - Release Notes
+
+Location of artifacts (local workspace):
+- JAR: `dist/logisim-swing-project.jar`
+- Release ZIP: `release-<timestamp>.zip` (created in project root)
+
+Build and test summary:
+- All Java sources compiled successfully (JDK 25 used for local build).
+- Unit tests: 3/3 passed (JUnit Platform console run).
+
+How to run the app locally:
+cd 'd:\SCD\PROJECT\CIRKIT\logisim-swing-project'
+& 'C:\Program Files\Java\jdk-25\bin\java.exe' -jar dist\logisim-swing-project.jar
+
+Notes for release:
+- The `dist/`, `lib/`, and `out/` folders and the release ZIP are intentionally not committed to git.
+- To attach the release to GitHub, use the `gh` CLI or upload the ZIP manually.
