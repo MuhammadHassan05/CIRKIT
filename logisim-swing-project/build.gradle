@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+group = 'com.example.logisim'
+version = '0.1.0'
+sourceCompatibility = '17'
+repositories { mavenCentral() }
+dependencies {
+    // No external runtime dependencies required for the simplified project
+}
+
+// Add JUnit 5 for tests
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+application {
+    mainClass = 'com.example.logisim.App'
+}

@@ -1,0 +1,2 @@
+-- seed.sql placeholder
+-- Use this file to insert sample data for the circuits database
