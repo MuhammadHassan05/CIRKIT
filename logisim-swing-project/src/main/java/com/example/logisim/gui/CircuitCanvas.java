@@ -28,9 +28,12 @@ public class CircuitCanvas extends JPanel {
     // for group dragging
     private java.util.Map<String, Point> groupDragOffsets = new java.util.HashMap<>();
 
-    public CircuitCanvas(Circuit circuit, AtomicReference<Gate.Type> selectedType) {
+    private final java.util.function.Consumer<Gate> selectionCallback;
+
+    public CircuitCanvas(Circuit circuit, AtomicReference<Gate.Type> selectedType, java.util.function.Consumer<Gate> selectionCallback) {
         this.circuit = circuit;
         this.selectedType = selectedType;
+        this.selectionCallback = selectionCallback;
         setBackground(Color.WHITE);
         setFocusable(true);
 
@@ -81,7 +84,6 @@ public class CircuitCanvas extends JPanel {
 
     private class MouseHandler extends MouseAdapter {
         private Gate dragging = null;
-        private Point dragOffset = null;
 
         @Override
         public void mousePressed(MouseEvent e) {
@@ -111,7 +113,9 @@ public class CircuitCanvas extends JPanel {
                             } else {
                                 selectedGates.add(g);
                             }
+                            // notify selection change
                             repaint();
+                            if (selectionCallback != null) selectionCallback.accept(selectedGates.size()==1?selectedGates.get(0):null);
                             return;
                         }
                         // normal selection + drag
@@ -119,6 +123,7 @@ public class CircuitCanvas extends JPanel {
                             selectedGates.clear();
                             selectedGates.add(g);
                         }
+                        if (selectionCallback != null) selectionCallback.accept(selectedGates.size()==1?selectedGates.get(0):null);
                         dragging = g;
                         // prepare offsets for group drag
                         groupDragOffsets.clear();
@@ -156,10 +161,26 @@ public class CircuitCanvas extends JPanel {
                     }
                 }
             } else if (SwingUtilities.isRightMouseButton(e)) {
-                // right-click clears selection and cancels wire creation
-                selectedGates.clear();
-                wireFromId = null;
-                repaint();
+                // right-click: if over a gate, toggle INPUT gate state; otherwise clear selection and cancel wire
+                boolean handled = false;
+                for (Gate g : circuit.getGates()) {
+                    Rectangle r = new Rectangle(g.x, g.y, 48, 24);
+                    if (r.contains(e.getPoint())) {
+                        if (g.type == Gate.Type.INPUT) {
+                            circuit.takeSnapshot();
+                            g.value = !g.value;
+                            handled = true;
+                            repaint();
+                            break;
+                        }
+                    }
+                }
+                if (!handled) {
+                    selectedGates.clear();
+                    wireFromId = null;
+                    if (selectionCallback != null) selectionCallback.accept(null);
+                    repaint();
+                }
             }
         }
 

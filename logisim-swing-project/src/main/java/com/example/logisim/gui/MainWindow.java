@@ -28,8 +28,10 @@ public class MainWindow extends JFrame {
         PalettePanel palette = new PalettePanel(t -> selectedType.set(t));
         add(palette, BorderLayout.WEST);
 
-        CircuitCanvas canvas = new CircuitCanvas(circuit, selectedType);
+        TruthTablePanel truthPanel = new TruthTablePanel(circuit);
+        CircuitCanvas canvas = new CircuitCanvas(circuit, selectedType, g -> truthPanel.showFor(g));
         add(canvas, BorderLayout.CENTER);
+        add(truthPanel, BorderLayout.EAST);
 
         JToolBar toolBar = new JToolBar();
         JButton btnNew = new JButton("New");
