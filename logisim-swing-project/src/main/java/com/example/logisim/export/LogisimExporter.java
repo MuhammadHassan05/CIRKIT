@@ -42,14 +42,31 @@ public class LogisimExporter {
                 w.write("    </comp>\n");
             }
 
-            // write wires using center points of components
+            // compute per-gate incoming/outgoing connection lists so we can place wires at distinct pin locations
+            java.util.Map<String, java.util.List<com.example.logisim.model.Connection>> incoming = new java.util.HashMap<>();
+            java.util.Map<String, java.util.List<com.example.logisim.model.Connection>> outgoing = new java.util.HashMap<>();
+            for (com.example.logisim.model.Connection conn : c.getConnections()) {
+                incoming.computeIfAbsent(conn.toId, k -> new java.util.ArrayList<>()).add(conn);
+                outgoing.computeIfAbsent(conn.fromId, k -> new java.util.ArrayList<>()).add(conn);
+            }
+
             for (com.example.logisim.model.Connection conn : c.getConnections()) {
                 Gate a = findGateById(gates, conn.fromId);
                 Gate b = findGateById(gates, conn.toId);
                 if (a == null || b == null) continue;
-                int ax = a.x + 24; int ay = a.y + 12;
-                int bx = b.x + 24; int by = b.y + 12;
-                w.write(String.format("    <wire from=\"%s\" to=\"%s\"/>\n", fmtPoint(ax, ay), fmtPoint(bx, by)));
+
+                java.util.List<com.example.logisim.model.Connection> outs = outgoing.getOrDefault(a.id, java.util.Collections.emptyList());
+                java.util.List<com.example.logisim.model.Connection> ins = incoming.getOrDefault(b.id, java.util.Collections.emptyList());
+
+                int outIdx = outs.indexOf(conn);
+                int outTotal = outs.size();
+                int inIdx = ins.indexOf(conn);
+                int inTotal = ins.size();
+
+                Point ap = attachPointForOutput(a, outIdx, outTotal);
+                Point bp = attachPointForInput(b, inIdx, inTotal);
+
+                w.write(String.format("    <wire from=\"%s\" to=\"%s\"/>\n", fmtPoint(ap.x, ap.y), fmtPoint(bp.x, bp.y)));
             }
 
             w.write("  </circuit>\n");
@@ -61,6 +78,83 @@ public class LogisimExporter {
         for (Gate g : gates) if (g.id.equals(id)) return g;
         return null;
     }
+
+    // Helper to compute an output attach point for a gate (right-middle by default)
+    private static Point attachPointForOutput(Gate g, int index, int total) {
+        int w = 48, h = 24;
+        int x = g.x, y = g.y;
+
+        // Per-component output templates
+        if (total <= 1 || index < 0) {
+            switch (g.type) {
+                case INPUT:
+                    // Input component's output on the right middle
+                    return new Point(x + w, y + h/2);
+                case NOT:
+                    // NOT gate: single output on right middle
+                    return new Point(x + w, y + h/2);
+                case AND:
+                case OR:
+                case XOR:
+                    // common case: single output on right-middle
+                    return new Point(x + w, y + h/2);
+                    default:
+                        return new Point(x + w, y + h/2);
+            }
+        }
+
+        // distribute outputs along the right edge (for multi-output components)
+        double step = (double) h / (total + 1);
+        int py = (int) Math.round(y + step * (index + 1));
+        return new Point(x + w, py);
+    }
+
+    // Helper to compute an input attach point for a gate (left-middle by default)
+    private static Point attachPointForInput(Gate g, int index, int total) {
+        int h = 24;
+        int x = g.x, y = g.y;
+        if (total <= 1 || index < 0) {
+            return new Point(x, y + h/2);
+        }
+
+        // Per-component pin templates for inputs (prefer specific templates where appropriate)
+        switch (g.type) {
+            case AND:
+            case OR:
+            case XOR:
+                // common visual arrangement: spread inputs vertically along left edge
+                switch (total) {
+                    case 2: {
+                        int p1 = y + (int) Math.round(h * 0.33);
+                        int p2 = y + (int) Math.round(h * 0.66);
+                        return new Point(x, index == 0 ? p1 : p2);
+                    }
+                    case 3: {
+                        int p1 = y + (int) Math.round(h * 0.2);
+                        int p2 = y + (int) Math.round(h * 0.5);
+                        int p3 = y + (int) Math.round(h * 0.8);
+                        return new Point(x, index == 0 ? p1 : (index == 1 ? p2 : p3));
+                    }
+                    default: {
+                        // fallback: evenly distribute
+                        double step = (double) h / (total + 1);
+                        int py = (int) Math.round(y + step * (index + 1));
+                        return new Point(x, py);
+                    }
+                }
+            case NOT:
+            case OUTPUT:
+            case INPUT:
+            default:
+                // single-input style: left-middle or distributed if multiple
+                double step = (double) h / (total + 1);
+                int py = (int) Math.round(y + step * (index + 1));
+                return new Point(x, py);
+        }
+    }
+
+    // small Point helper to avoid extra imports at top
+    private static class Point { public final int x, y; public Point(int x, int y) { this.x=x; this.y=y; } }
 
     private static String escapeXml(String s) {
         if (s == null) return "";
