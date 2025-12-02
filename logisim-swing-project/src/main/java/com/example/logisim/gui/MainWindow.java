@@ -56,6 +56,7 @@ public class MainWindow extends JFrame {
 
         JToggleButton wireToggle = new JToggleButton("Wire");
         toolBar.add(wireToggle);
+        wireToggle.addActionListener(e -> canvas.setWireMode(wireToggle.isSelected()));
 
         JButton btnExport = new JButton("Export .circ");
         btnExport.addActionListener(e -> {

@@ -22,6 +22,8 @@ public class CircuitCanvas extends JPanel {
     private Point mousePos = new Point(0,0);
     // current wire start id (null when not creating a wire)
     private String wireFromId = null;
+    // when true, left-click starts/completes wires (toolbar toggle)
+    private boolean wireMode = false;
     private Rectangle selectionRect = null;
     // for group dragging
     private java.util.Map<String, Point> groupDragOffsets = new java.util.HashMap<>();
@@ -68,6 +70,15 @@ public class CircuitCanvas extends JPanel {
         addMouseMotionListener(mh);
     }
 
+    public void setWireMode(boolean on) {
+        this.wireMode = on;
+        // cancel any in-progress wire when toggling off
+        if (!on) {
+            this.wireFromId = null;
+        }
+        repaint();
+    }
+
     private class MouseHandler extends MouseAdapter {
         private Gate dragging = null;
         private Point dragOffset = null;
@@ -79,8 +90,8 @@ public class CircuitCanvas extends JPanel {
                 for (Gate g : circuit.getGates()) {
                     Rectangle r = new Rectangle(g.x, g.y, 48, 24);
                     if (r.contains(e.getPoint())) {
-                        // Shift+click starts/completes a wire between gates
-                        if (e.isShiftDown()) {
+                        // Shift+click or toolbar wire mode starts/completes a wire between gates
+                        if (wireMode || e.isShiftDown()) {
                             circuit.takeSnapshot();
                             if (wireFromId == null) {
                                 wireFromId = g.id;
@@ -119,23 +130,30 @@ public class CircuitCanvas extends JPanel {
                         return;
                     }
                 }
-                // not on a gate -> place new if type selected
-                Gate.Type t = selectedType.get();
-                if (t != null) {
-                    circuit.takeSnapshot();
-                    int gx = (e.getX() / grid) * grid;
-                    int gy = (e.getY() / grid) * grid;
-                    String id = "g" + System.currentTimeMillis();
-                    Gate g = new Gate(id, t, gx, gy);
-                    circuit.addGate(g);
-                    selectedGates.clear(); selectedGates.add(g);
+                // not on a gate -> if wireMode is active, start/clear wire; otherwise place new if type selected
+                if (wireMode) {
+                    // clicking empty space cancels any in-progress wire
+                    wireFromId = null;
+                    selectedGates.clear();
                     repaint();
                 } else {
-                    // clear selection when clicking empty space without a selected type
-                    selectedGates.clear();
-                    // start selection rectangle
-                    selectionRect = new Rectangle(e.getX(), e.getY(), 0, 0);
-                    repaint();
+                    Gate.Type t = selectedType.get();
+                    if (t != null) {
+                        circuit.takeSnapshot();
+                        int gx = (e.getX() / grid) * grid;
+                        int gy = (e.getY() / grid) * grid;
+                        String id = "g" + System.currentTimeMillis();
+                        Gate g = new Gate(id, t, gx, gy);
+                        circuit.addGate(g);
+                        selectedGates.clear(); selectedGates.add(g);
+                        repaint();
+                    } else {
+                        // clear selection when clicking empty space without a selected type
+                        selectedGates.clear();
+                        // start selection rectangle
+                        selectionRect = new Rectangle(e.getX(), e.getY(), 0, 0);
+                        repaint();
+                    }
                 }
             } else if (SwingUtilities.isRightMouseButton(e)) {
                 // right-click clears selection and cancels wire creation
